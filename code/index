@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found AI</title>
+    <link rel="stylesheet" href="final.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #f1f5f9 100%);
+            margin: 0;
+            padding: 20px;
+            color: #334155;
+            min-height: 100vh;
+        }
+
+        #lost-found-container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 98, 204, 0.1);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            background: linear-gradient(90deg, #4f46e5, #3b82f6, #10b981, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-top: 0;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .form-sections {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            flex: 1;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 98, 204, 0.15);
+        }
+
+        .found-section {
+            border-color: #93c5fd;
+            background-color: #f0f9ff;
+        }
+
+        .lost-section {
+            border-color: #86efac;
+            background-color: #f0fdf4;
+        }
+
+        .section h2 {
+            font-size: 1.4rem;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .found-section h2 {
+            color: #3b82f6;
+        }
+
+        .lost-section h2 {
+            color: #10b981;
+        }
+
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        button,
+        input[type="submit"] {
+            background: linear-gradient(90deg, #818cf8, #60a5fa);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.2);
+            width: 100%;
+        }
+
+        button:hover,
+        input[type="submit"]:hover {
+            background: linear-gradient(90deg, #6366f1, #3b82f6);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);
+        }
+
+        #upload-success {
+            background-color: #a78bfa;
+            padding: 10px;
+            color: white;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: #f5f3ff;
+            border-radius: 12px;
+            color: #7c3aed;
+            font-weight: 600;
+            border-left: 4px solid #a78bfa;
+            display: none;}
+
+ #search-image {
+            display: none;
+            margin-top: 16px;
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+            position: relative;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+
+        }
+    </style>
+</head>
+<body>
+    <div id="lost-found-container">
+        <h1>Lost & Found AI</h1>
+        <p class="tagline">Find what you've lost. Help others find what they've found.</p>
+
+        <div class="form-sections">
+            <!-- Upload Section -->
+            <div class="section found-section">
+                <h2>Found an Item?</h2>
+                <form id="upload-form" action="/predict" method="POST" enctype="multipart/form-data" onsubmit="handleUpload(event)">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="upload-item" onchange="toggleFileInput()">
+                        <label for="upload-item">Upload Found Item</label>
+                    </div>
+                    <input type="file" id="item-upload" name="image" required disabled>
+                    <input type="submit" value="Upload">
+                </form>
+                <div id="upload-success">Item Uploaded Successfully!</div>
+                <p id="upload-result" style="color: #4f46e5; font-weight: bold;"></p>
+            </div>
+
+            <!-- Search Section -->
+            <div class="section lost-section">
+                <h2>Lost Something?</h2>
+                <form id="search-form" action="/search" method="POST" onsubmit="handleSearch(event)">
+                    <input type="text" id="lost-item-name" placeholder="Enter Item Name" required>
+                    <input type="text" id="lost-color" placeholder="Enter Color" required>
+                    <input type="submit" value="Search">
+                </form>
+
+                <div id="result">
+                    <strong>Result:</strong> <span id="result-message">No result</span>
+                </div>
+
+                <!-- (✅ New: This image will show the result image if found) -->
+                <img id="search-image" alt="Search result image" style="display:none; margin-top: 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1); max-width: 100%;">
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Activate Windows<br>
+            Go to Settings to activate Windows.
+        </div>
+    </div>
+
+   
+    <!-- Scripts -->
+    <script>
+        function showPopup(message) {
+            const popup = document.getElementById('popup');
+            const popupMessage = document.getElementById('popup-message');
+            popupMessage.innerText = message;
+            popup.style.display = 'flex';
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('popup');
+            popup.style.display = 'none';
+        }
+
+        function toggleFileInput() {
+            const fileInput = document.getElementById('item-upload');
+            const checkbox = document.getElementById('upload-item');
+            fileInput.disabled = !checkbox.checked;
+        }
+
+        function handleUpload(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('upload-success').style.display = 'block';
+                    document.getElementById('upload-result').innerText = data.message || '';
+                    showPopup(data.message || "Upload successful!");
+
+                    setTimeout(() => {
+                        document.getElementById('upload-success').style.display = 'none';
+                        document.getElementById('upload-result').innerText = '';
+                    }, 3000);
+
+                    document.getElementById('item-upload').value = '';
+                    document.getElementById('upload-item').checked = false;
+                    document.getElementById('item-upload').disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+            });
+        }
+
+        function resetResult() {
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('result-message').innerText = '';
+            document.getElementById('search-image').style.display = 'none';
+        }
+
+        function handleSearch(event) {
+            event.preventDefault();
+
+            const itemName = document.getElementById('lost-item-name').value.trim().toLowerCase();
+            const itemColor = document.getElementById('lost-color').value.trim().toLowerCase();
+            const resultElement = document.getElementById('result');
+            const resultMessage = document.getElementById('result-message');
+            const searchImage = document.getElementById('search-image');
+
+            if (!itemName || !itemColor) {
+                resultMessage.innerText = 'Please enter both item name and color.';
+                resultElement.style.display = 'block';
+                return;
+            }
+
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    item_name: itemName,
+                    color: itemColor
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultMessage.innerText = data.result || 'No result found';
+                resultElement.style.display = 'block';
+
+                if (data.image_url) {
+                    searchImage.src = data.image_url;
+                    searchImage.style.display = 'block';
+                } else {
+                    searchImage.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error during search:', error);
+                resultMessage.innerText = 'Error occurred while searching.';
+                resultElement.style.display = 'block';
+            });
+        }
+
+        document.getElementById('lost-item-name').addEventListener('input', resetResult);
+        document.getElementById('lost-color').addEventListener('input', resetResult);
+    </script>
+</body>
+</html>
